@@ -1,5 +1,5 @@
 pub fn parse_ints(ints: Vec<String>) -> Vec<i32> {
-    ints.into_iter().map(|i| i.parse().unwrap()).collect()
+    ints.into_iter().filter_map(|i| i.parse().ok()).collect()
 }
 
 #[cfg(test)]
