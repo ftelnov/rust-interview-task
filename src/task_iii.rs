@@ -2,16 +2,16 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 
 pub async fn get_stock_prices(tickers: Vec<String>) -> Vec<(String, f64)> {
-    // Make yahoo trade-safe here.
+    // Make yahoo thread-safe here.
     let yahoo = yahoo_finance_api::YahooConnector::new();
     let yahoo = Arc::new(yahoo);
 
-    // Make result trade-safe, even with available mutability
+    // Make result thread-safe, even with available mutability
     let mut result = Vec::with_capacity(500);
     let mut result = Arc::new(Mutex::new(result));
 
     // vec of futures to join later
-    let mut handles = vec![];
+    let mut handles = Vec::with_capacity(500);
 
     for ticker in tickers {
         let yahoo = yahoo.clone();
@@ -33,7 +33,7 @@ pub async fn get_stock_prices(tickers: Vec<String>) -> Vec<(String, f64)> {
         handle.await.unwrap();
     }
 
-    result.lock_owned().await.to_owned()
+    Arc::try_unwrap(result).unwrap().into_inner()
 }
 
 #[cfg(test)]
